@@ -19,7 +19,7 @@ class U8G2 {
 	u8g2_t u8g2;
 	
  public:
-U8G2() = default;
+    U8G2() = default;
 	u8g2_uint_t tx, ty;
 	
 	u8g2_t *getU8g2(void) { return &u8g2; }

@@ -70,15 +70,7 @@ class BicolorLedArray {
   // Intensity is in AAAABBBB format, where AAAA is the intensity for the
   // color 1, and BBBB is the intensity for the color 2.
   static inline void set_pixel(uint8_t index, uint8_t intensity) {
-    buffered_pixels[index] = intensity;
-  }
-
-  static inline void set_direct_pixel(uint8_t index, uint8_t intensity) {
     pixels[index] = intensity;
-  }
-  
-  static inline uint8_t pixel(uint8_t index) {
-    return buffered_pixels[index];
   }
   
   static inline void Begin() {
@@ -90,11 +82,7 @@ class BicolorLedArray {
   }
   
   static inline void Clear() {
-    memset(buffered_pixels, 0, size);
-  }
-  
-  static inline void Sync() {
-    memcpy(pixels, buffered_pixels, size);
+    memset(pixels, 0, size);
   }
   
   static inline void ShiftOutPixels() {
@@ -135,13 +123,10 @@ class BicolorLedArray {
       ++refresh_cycle;
   }
   
-  uint8_t* GetBufferedPixels() { return buffered_pixels; }
-  
  private:
 
   typedef avrlib::SpiMasterPrimitive<> spi_;
 
-  static uint8_t buffered_pixels[size];
   static uint8_t pixels[size];
   static uint8_t refresh_cycle;
 
@@ -150,9 +135,6 @@ class BicolorLedArray {
 
 template<typename CS>
 uint8_t BicolorLedArray<CS>::pixels[size];
-
-template<typename CS>
-uint8_t BicolorLedArray<CS>::buffered_pixels[size];
 
 template<typename CS>
 uint8_t BicolorLedArray<CS>::refresh_cycle;

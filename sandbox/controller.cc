@@ -14,9 +14,9 @@ int main(void) {
 	oled.setFont(u8g2_font_ncenB14_tr);
 	oled.drawStr(0,20,"Privetik");
 	oled.sendBuffer();
-	bla.set_direct_pixel(0, 0b00001111);
-	bla.set_direct_pixel(1, 0b11111111);
-	bla.set_direct_pixel(2, 0b11110000);
+	bla.set_pixel(0, 0b00001111);
+	bla.set_pixel(1, 0b11111111);
+	bla.set_pixel(2, 0b11110000);
   while (1) {
 	  bla.ShiftOutPixels();
   }

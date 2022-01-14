@@ -73,14 +73,6 @@ class BicolorLedArray {
     pixels[index] = intensity;
   }
   
-  static inline void Begin() {
-    CS::Low();
-  }
-  
-  static inline void End() {
-    CS::High();
-  }
-  
   static inline void Clear() {
     memset(pixels, 0, size);
   }
@@ -129,6 +121,14 @@ class BicolorLedArray {
 
   static uint8_t pixels[size];
   static uint8_t refresh_cycle;
+
+  static inline void Begin() {
+    CS::Low();
+  }
+  
+  static inline void End() {
+    CS::High();
+  }
 
   DISALLOW_COPY_AND_ASSIGN(BicolorLedArray);
 };

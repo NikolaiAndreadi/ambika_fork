@@ -69,7 +69,7 @@ class BicolorLedArray {
   
   // Intensity is in AAAABBBB format, where AAAA is the intensity for the
   // color 1, and BBBB is the intensity for the color 2.
-  static inline void set_pixel(uint8_t index, uint8_t intensity) {
+  static inline void SetPixel(uint8_t index, uint8_t intensity) {
     pixels[index] = intensity;
   }
   
@@ -77,7 +77,7 @@ class BicolorLedArray {
     memset(pixels, 0, size);
   }
   
-  static inline void ShiftOutPixels() {
+  static inline void Update() {
     uint8_t package;
     uint8_t brightness;
     uint8_t threshold = refresh_cycle & 0x0f;

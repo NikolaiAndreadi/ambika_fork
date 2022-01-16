@@ -1,102 +1,67 @@
-#ifndef _I2CMASTER_H
-#define _I2CMASTER_H  
-/************************************************************************* 
-* Title:    C include file for the I2C master interface 
-*           (i2cmaster.S or twimaster.c)
-* Author:   Peter Fleury <pfleury@gmx.ch>  http://jump.to/fleury
-* File:     $Id: i2cmaster.h,v 1.10 2005/03/06 22:39:57 Peter Exp $
-* Software: AVR-GCC 3.4.3 / avr-libc 1.2.3
-* Target:   any AVR device
-* Usage:    see Doxygen manual
-**************************************************************************/
+#ifndef _I2C_H
+#define _I2C_H
 
-#include <avr/io.h>
+#include <avrlib/base.h>
+#include <compat/twi.h>
 
-/** defines the data direction (reading from I2C device) in i2c_start(),i2c_rep_start() */
-#define I2C_READ    1
+#define I2C_WRITE 0
+#define I2C_READ 1
 
-/** defines the data direction (writing to I2C device) in i2c_start(),i2c_rep_start() */
-#define I2C_WRITE   0
+namespace avrlib {
 
+template <uint32_t frequency>
+class I2cMaster {
+  public:
+    static bool Begin(uint8_t address) {
+        // returns true if success
+        uint8_t   twst;
 
-/**
- @brief initialize the I2C master interace. Need to be called only once 
- @param  void
- @return none
- */
-extern void i2c_init(void);
+	    TWCR = (1<<TWINT) | (1<<TWSTA) | (1<<TWEN); // send START condition
+	    while(!(TWCR & (1<<TWINT))); // wait until transmission completed
 
+	    twst = TW_STATUS & 0xF8; // check Status Register, mask prescaler bits.
+	    if ( (twst != TW_START) && (twst != TW_REP_START)) return false;
 
-/** 
- @brief Terminates the data transfer and releases the I2C bus 
- @param void
- @return none
- */
-extern void i2c_stop(void);
+	    TWDR = address; // send device address
+	    TWCR = (1<<TWINT) | (1<<TWEN);
+	    while(!(TWCR & (1<<TWINT)));
 
+	    twst = TW_STATUS & 0xF8; // check Status Register
+	    if ( (twst != TW_MT_SLA_ACK) && (twst != TW_MR_SLA_ACK) ) return false;
+	    return true;
+    }
 
-/** 
- @brief Issues a start condition and sends address and transfer direction 
-  
- @param    addr address and transfer direction of I2C device
- @retval   0   device accessible 
- @retval   1   failed to access device 
- */
-extern unsigned char i2c_start(unsigned char addr);
+    static void End() { 
+        TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWSTO); 
+        while(TWCR & (1<<TWSTO));
+    }
 
+    I2cMaster() {
+        TWSR = 0; // no prescaler
+        TWBR = ((F_CPU/frequency)-16)/2;
+    }
 
-/**
- @brief Issues a repeated start condition and sends address and transfer direction 
- @param   addr address and transfer direction of I2C device
- @retval  0 device accessible
- @retval  1 failed to access device
- */
-extern unsigned char i2c_rep_start(unsigned char addr);
+    static void Write(uint8_t data) {
+	    TWDR = data; 
+	    TWCR = (1<<TWINT) | (1<<TWEN);
+	    while(!(TWCR & (1<<TWINT))); 
+    }
 
+    static uint8_t Read(bool continueRead = false) {
+        if (continueRead)
+            TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
+        else
+            TWCR = (1<<TWINT) | (1<<TWEN);
+        
+	    while(!(TWCR & (1<<TWINT)));    
+        return TWDR;
+    }
 
-/**
- @brief Issues a start condition and sends address and transfer direction 
-   
- If device is busy, use ack polling to wait until device ready 
- @param    addr address and transfer direction of I2C device
- @return   none
- */
-extern void i2c_start_wait(unsigned char addr);
+    DISALLOW_COPY_AND_ASSIGN(I2cMaster);
+};
 
- 
-/**
- @brief Send one byte to I2C device
- @param    data  byte to be transfered
- @retval   0 write successful
- @retval   1 write failed
- */
-extern unsigned char i2c_write(unsigned char data);
+extern I2cMaster<400000> i2c;
 
+}  // namespace avrlib
 
-/**
- @brief    read one byte from the I2C device, request more data from device 
- @return   byte read from I2C device
- */
-extern unsigned char i2c_readAck(void);
-
-/**
- @brief    read one byte from the I2C device, read is followed by a stop condition 
- @return   byte read from I2C device
- */
-extern unsigned char i2c_readNak(void);
-
-/** 
- @brief    read one byte from the I2C device
- 
- Implemented as a macro, which calls either i2c_readAck or i2c_readNak
- 
- @param    ack 1 send ack, request more data from device<br>
-               0 send nak, read is followed by a stop condition 
- @return   byte read from I2C device
- */
-extern unsigned char i2c_read(unsigned char ack);
-#define i2c_read(ack)  (ack) ? i2c_readAck() : i2c_readNak(); 
-
-
-/**@}*/
-#endif
+#endif // _I2C_H

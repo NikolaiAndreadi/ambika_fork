@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include "avrlib/devices/bicolor_led_array.h"
-#include "displaylib/SSD1322.h"
+#include "avrlib/devices/oled/SSD1322.h"
 #include "hardware_config.h"
 #include "avrlib/devices/pca9555.h"
 

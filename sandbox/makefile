@@ -16,6 +16,8 @@ MCU_NAME       = 1284
 TARGET         = sandbox
 PACKAGES       = avrlib \
 		avrlib/devices \
+		avrlib/devices/oled/u8g2 \
+		avrlib/devices/oled \
 		avrlib/filesystem \
 		avrlib/third_party/ff \
 		avrlib/i2c \

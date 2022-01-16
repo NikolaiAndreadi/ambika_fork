@@ -1,7 +1,10 @@
 #ifndef SSD1322_HH
 #define SSD1322_HH
 
-#include "u8g2/u8g2.h"
+// Based on u8g2 cpp interface (trimmed down version)
+// https://github.com/olikraus/u8g2
+
+#include "avrlib/devices/oled/u8g2/u8g2.h"
 #include "avrlib/time.h"
 #include "avrlib/spi.h"
 
@@ -13,43 +16,39 @@
 // undef U8G2_WITH_FONT_ROTATION
 // undef U8G2_WITH_UNICODE
 
+namespace avrlib {
 
 class U8G2 {
  protected: 
 	u8g2_t u8g2;
 	
  public:
-    U8G2() = default;
+	U8G2() = default;
 	u8g2_uint_t tx, ty;
 	
 	u8g2_t *getU8g2(void) { return &u8g2; }
-	
-	void initDisplay(void) { u8g2_InitDisplay(&u8g2); }
-      
-  	void clearDisplay(void) { u8g2_ClearDisplay(&u8g2); }
-    
-  	void setPowerSave(uint8_t is_enable) { u8g2_SetPowerSave(&u8g2, is_enable); }
-    
-  	void setFlipMode(uint8_t mode) { u8g2_SetFlipMode(&u8g2, mode); }
 
+	void initDisplay(void) { u8g2_InitDisplay(&u8g2); }
+    void clearDisplay(void) { u8g2_ClearDisplay(&u8g2); }
+    void setPowerSave(uint8_t is_enable) { u8g2_SetPowerSave(&u8g2, is_enable); }
+    void setFlipMode(uint8_t mode) { u8g2_SetFlipMode(&u8g2, mode); }
   	void setContrast(uint8_t value) { u8g2_SetContrast(&u8g2, value); }
-    
   	void setDisplayRotation(const u8g2_cb_t *u8g2_cb) { u8g2_SetDisplayRotation(&u8g2, u8g2_cb); }
-	  
+
 	bool begin(void) {
-      initDisplay(); 
-      clearDisplay(); 
-      setPowerSave(0); 
-      return 1;
+    	initDisplay(); 
+    	clearDisplay(); 
+    	setPowerSave(0); 
+    	return 1;
     }
 	
 	u8g2_uint_t getDisplayHeight(void) { return u8g2_GetDisplayHeight(&u8g2); }
-  	u8g2_uint_t getDisplayWidth(void) { return u8g2_GetDisplayWidth(&u8g2); }
+	u8g2_uint_t getDisplayWidth(void) { return u8g2_GetDisplayWidth(&u8g2); }
 	
 	void sendBuffer(void) { u8g2_SendBuffer(&u8g2); }
   	void clearBuffer(void) { u8g2_ClearBuffer(&u8g2); }    
 	uint8_t *getBufferPtr(void) { return u8g2_GetBufferPtr(&u8g2); }
-  	uint8_t getBufferTileHeight(void) { return u8g2_GetBufferTileHeight(&u8g2); }
+	uint8_t getBufferTileHeight(void) { return u8g2_GetBufferTileHeight(&u8g2); }
   	uint8_t getBufferTileWidth(void) { return u8g2_GetBufferTileWidth(&u8g2); }
 	void setBufferAutoClear(uint8_t mode)  { u8g2_SetAutoPageClear(&u8g2, mode); }
 		
@@ -115,9 +114,10 @@ class U8G2 {
 	u8g2_uint_t getWidth() { return u8g2_GetDisplayWidth(&u8g2); }
 };
 
+
 template <typename CS, typename DC, typename RESET>
 class SSD1322 : public U8G2 {
- private:
+private:
 	typedef avrlib::SpiMasterPrimitive<> spi_;
 
 	static uint8_t byte_hw_spi(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr) {	
@@ -186,5 +186,7 @@ class SSD1322 : public U8G2 {
 		u8g2_Setup_ssd1322_nhd_256x64_f(&u8g2, U8G2_R2, byte_hw_spi, gpio_and_delay);
 	}
 };
+
+} // namespace avrlib
 
 #endif // SSD1322_HH

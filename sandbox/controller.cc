@@ -14,14 +14,47 @@ int main(void) {
 	pinSingleLed::High();	
   	oled.begin();
 	pinSingleLed::Low();
-	//oled.fill();
-  	oled.print(0, 10, "!#$%&'()*+,-./0123456789:;<=>?");
-	oled.print(0, 25, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-	oled.print(0, 40, "abcdefghijklmnopqrstuvwxyz");
-	oled.immediateUpdate();
-	while (1) {
-		//oled.update();
-		pinSingleLed::Toggle();	
-		//_delay_ms(50);
+	
+	while(1) {
+		for (uint8_t i = 10; i<60; i++) {
+			oled.clearBuffer();
+			oled.drawChunkBorders();
+			oled.fill();
+			oled.print(i, i, "(Hejjo)");
+			for (uint8_t iter=0; iter<255; iter++) {
+				oled.update();
+			}
+			_delay_ms(500);
+		}
+		for (uint8_t i = 60; i>10; i--) {
+			oled.clearBuffer();
+			oled.drawChunkBorders();
+			oled.fill();
+			oled.print(120-i, i, "(Hejjo)");
+			for (uint8_t iter=0; iter<255; iter++) {
+				oled.update();
+			}
+			_delay_ms(500);
+		}
+		for (uint8_t i = 10; i<60; i++) {
+			oled.clearBuffer();
+			oled.drawChunkBorders();
+			oled.fill();
+			oled.print(120-i, i, "(Hejjo)");
+			for (uint8_t iter=0; iter<255; iter++) {
+				oled.update();
+			}
+			_delay_ms(500);
+		}
+		for (uint8_t i = 60; i>10; i--) {
+			oled.clearBuffer();
+			oled.drawChunkBorders();
+			oled.fill();
+			oled.print(i, i, "(Hejjo)");
+			for (uint8_t iter=0; iter<255; iter++) {
+				oled.update();
+			}
+			_delay_ms(500);
+		}
   	}
 }

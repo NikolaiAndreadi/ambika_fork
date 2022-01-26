@@ -11,10 +11,13 @@ template <typename CS, typename DC, typename RESET>
 class OledDisplay : private SSD1322<CS, DC, RESET> {
     static constexpr uint16_t max_x = 256;
     static constexpr uint16_t max_y = 64;
+    
     static constexpr uint8_t row_count = 8;
     static constexpr uint8_t column_count = 32;
-    static constexpr uint8_t dryrun_count = 8; // max 32
-    static constexpr uint8_t char_height_up = 8;
+
+    static constexpr uint8_t dryrun_count = 8; // max 32 - cycles without screen update
+
+    static constexpr uint8_t char_height_up = 2;
     static constexpr uint8_t char_height_down = 2;
     
     uint8_t last_updated_row;
@@ -37,6 +40,18 @@ class OledDisplay : private SSD1322<CS, DC, RESET> {
     void immediateUpdate() {
         U8G2::updateDisplay();
         memset(update_mask, 0, sizeof update_mask);
+    }
+
+    void clearBuffer() {
+        U8G2::clearBuffer();
+    }
+
+    void drawChunkBorders() {
+        for (uint8_t v=0; v<column_count; v++)
+            U8G2::drawVLine(v*8, 0, max_y);
+        for (uint8_t h=0; h<row_count; h++)
+            U8G2::drawHLine(0, h*8, max_x);
+        immediateUpdate();
     }
 
     // y first (down to up), then x (right to left)
@@ -64,23 +79,23 @@ class OledDisplay : private SSD1322<CS, DC, RESET> {
 
     void fill() {
         U8G2::drawBox(0,0,max_x,max_y);
-        memset(update_mask, 0xff, sizeof update_mask);
+        //memset(update_mask, 0xff, sizeof update_mask);
     }
 
     inline void setColor(uint8_t c) { U8G2::setColorIndex(c); }
 
     inline void updateMaskRegion(uint16_t x0, uint8_t y0, uint16_t x1, uint8_t y1) {
         x0/=8;
-        x1/=8;
+        x1=(x1+7)/8; // ceiling
         x0 = column_count-x0; // is bigger
         x1 = column_count-x1;
         
         y0/=8;
-        y1/=8;
+        y1=(y1+7)/8;
         y0 = row_count-y0;
         y1 = row_count-y1;
-        y0 = 0xff >> (8-y0);
-        y1 = 0xff << y1-1;
+        y0 = 0xff >> (7-y0);
+        y1 = 0xff << y1;
         y0 &= y1;
         
         for (int x=x1; x<x0; x++)
@@ -90,9 +105,9 @@ class OledDisplay : private SSD1322<CS, DC, RESET> {
     inline void print(u8g2_uint_t x, u8g2_uint_t y, const char *s) {
         uint16_t count;
         count = U8G2::drawUTF8(x, y, s); // xy is down left point  
-        //updateMaskRegion(x, y-char_height, x+count, y);
-        setColor(2);
-        U8G2::drawFrame(x, y-char_height_up, count, char_height_up+char_height_down);
+        updateMaskRegion(x, y-char_height_up, x+count, y+char_height_down);
+        //setColor(2);
+        //U8G2::drawFrame(x, y-char_height_up, count, char_height_up+char_height_down);
     }
     
     inline void print(u8g2_uint_t x, u8g2_uint_t y, const uint8_t i) {

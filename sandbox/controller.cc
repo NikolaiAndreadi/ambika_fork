@@ -14,10 +14,14 @@ int main(void) {
 	pinSingleLed::High();	
   	oled.begin();
 	pinSingleLed::Low();
-	oled.fill();
-  	while (1) {
-		oled.update();
+	//oled.fill();
+  	oled.print(0, 10, "!#$%&'()*+,-./0123456789:;<=>?");
+	oled.print(0, 25, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+	oled.print(0, 40, "abcdefghijklmnopqrstuvwxyz");
+	oled.immediateUpdate();
+	while (1) {
+		//oled.update();
 		pinSingleLed::Toggle();	
-		_delay_ms(10);
+		//_delay_ms(50);
   	}
 }

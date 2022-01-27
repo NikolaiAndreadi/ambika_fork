@@ -17,8 +17,8 @@ class OledDisplay : private SSD1322<CS, DC, RESET> {
 
     static constexpr uint8_t dryrun_count = 8; // max 32 - cycles without screen update
 
-    static constexpr uint8_t char_height_up = 2;
-    static constexpr uint8_t char_height_down = 2;
+    static constexpr uint8_t char_height_up = 1;
+    static constexpr uint8_t char_height_down = 3;
     
     uint8_t last_updated_row;
     uint8_t last_updated_column;
@@ -79,21 +79,22 @@ class OledDisplay : private SSD1322<CS, DC, RESET> {
 
     void fill() {
         U8G2::drawBox(0,0,max_x,max_y);
-        //memset(update_mask, 0xff, sizeof update_mask);
+        memset(update_mask, 0xff, sizeof update_mask);
     }
 
     inline void setColor(uint8_t c) { U8G2::setColorIndex(c); }
 
     inline void updateMaskRegion(uint16_t x0, uint8_t y0, uint16_t x1, uint8_t y1) {
-        x0/=8;
-        x1=(x1+7)/8; // ceiling
-        x0 = column_count-x0; // is bigger
+        x0>>=3;
+        x1=(x1+7)>>3; // ceiling (div by 8)
+        x0 = column_count-x0; // now is bigger than x1
         x1 = column_count-x1;
         
-        y0/=8;
-        y1=(y1+7)/8;
+        y0>>=3;
+        y1=(y1+7)>>3;
         y0 = row_count-y0;
         y1 = row_count-y1;
+        
         y0 = 0xff >> (7-y0);
         y1 = 0xff << y1;
         y0 &= y1;
@@ -104,10 +105,8 @@ class OledDisplay : private SSD1322<CS, DC, RESET> {
 
     inline void print(u8g2_uint_t x, u8g2_uint_t y, const char *s) {
         uint16_t count;
-        count = U8G2::drawUTF8(x, y, s); // xy is down left point  
+        count = U8G2::drawStr(x, y, s); // xy is down left point  
         updateMaskRegion(x, y-char_height_up, x+count, y+char_height_down);
-        //setColor(2);
-        //U8G2::drawFrame(x, y-char_height_up, count, char_height_up+char_height_down);
     }
     
     inline void print(u8g2_uint_t x, u8g2_uint_t y, const uint8_t i) {

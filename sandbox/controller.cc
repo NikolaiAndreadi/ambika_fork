@@ -14,47 +14,44 @@ int main(void) {
 	pinSingleLed::High();	
   	oled.begin();
 	pinSingleLed::Low();
+	//bla.SetPixel(0, 0b00001111);
+	//bla.SetPixel(1, 0b11111111);
+	//bla.SetPixel(2, 0b11110000);
 	
+	oled.setColor(1);
+
 	while(1) {
 		for (uint8_t i = 10; i<60; i++) {
-			oled.clearBuffer();
-			oled.drawChunkBorders();
-			oled.fill();
-			oled.print(i, i, "(Hejjo)");
-			for (uint8_t iter=0; iter<255; iter++) {
+			oled.print(i, i, "(Hello)");
+			for (uint8_t iter=0; iter<32; iter++) {
 				oled.update();
+				//bla.Update();
 			}
-			_delay_ms(500);
+			//_delay_ms(10);
 		}
 		for (uint8_t i = 60; i>10; i--) {
-			oled.clearBuffer();
-			oled.drawChunkBorders();
-			oled.fill();
-			oled.print(120-i, i, "(Hejjo)");
-			for (uint8_t iter=0; iter<255; iter++) {
+			oled.print(120-i, i, "(Hello)");
+			for (uint8_t iter=0; iter<32; iter++) {
 				oled.update();
+				//bla.Update();
 			}
-			_delay_ms(500);
+			//_delay_ms(10);
 		}
 		for (uint8_t i = 10; i<60; i++) {
-			oled.clearBuffer();
-			oled.drawChunkBorders();
-			oled.fill();
-			oled.print(120-i, i, "(Hejjo)");
-			for (uint8_t iter=0; iter<255; iter++) {
+			oled.print(120-i, i, "(Hello)");
+			for (uint8_t iter=0; iter<32; iter++) {
 				oled.update();
+				//bla.Update();
 			}
-			_delay_ms(500);
+			//_delay_ms(10);
 		}
 		for (uint8_t i = 60; i>10; i--) {
-			oled.clearBuffer();
-			oled.drawChunkBorders();
-			oled.fill();
-			oled.print(i, i, "(Hejjo)");
-			for (uint8_t iter=0; iter<255; iter++) {
+			oled.print(i, i, "(Hello)");
+			for (uint8_t iter=0; iter<32; iter++) {
 				oled.update();
+				//bla.Update();
 			}
-			_delay_ms(500);
+			//_delay_ms(10);
 		}
   	}
 }

@@ -11,13 +11,6 @@ int main(void) {
 	pinSingleLed::High();	
   	oled.Init();
 	pinSingleLed::Low();
-
-	while(1) {
-		for (uint8_t i = 10; i<60; i++) {
-			oled.DrawText(i, i, "(");
-			for (uint8_t iter=0; iter<32; iter++) {
-				oled.Update();
-			}
-		}
-  	}
+	oled.DrawHLine(15, 15, 50);
+	oled.UpdateAll();
 }

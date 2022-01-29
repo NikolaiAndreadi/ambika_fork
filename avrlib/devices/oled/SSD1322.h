@@ -3,9 +3,7 @@
 
 // Based on u8g2 cpp interface (trimmed down version)
 // https://github.com/olikraus/u8g2
-
-    // TODO u8g2_SetFontMode(&u8g2, is_transparent);
-    // u8g2_SetDrawColor(&u8g2, color_index);
+// partial display functionality by github.com/NikolaiAndreadi
 
 #include <stdlib.h>
 #include <string.h>
@@ -100,6 +98,7 @@ class SSD1322  {
         }
         return 1;
     }
+
     void updateMaskRegions(uint16_t x0, uint8_t y0, uint16_t x1, uint8_t y1) {
         x0>>=3;
         x1=(x1+7)>>3; // ceiling (div by 8)
@@ -169,6 +168,7 @@ class SSD1322  {
     }
 
     void SetColor(uint8_t color) { u8g2_SetDrawColor(&u8g2, color); }
+    void SetFontMode(uint8_t mode) { u8g2_SetFontMode(&u8g2, mode); }
 
     void DrawUpdateMaskRegions() {
         for (uint8_t v=0; v<column_count; v++)
@@ -179,11 +179,38 @@ class SSD1322  {
     }
     void DrawHLine(u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w) {
         u8g2_DrawHLine(&u8g2, x, y, w);
-        // todo update sequence for line
+        // mask update sequence:
+        u8g2_uint_t x1 = x + w;
+        x>>=3;
+        x1=(x1+7)>>3;
+        x = column_count-x;
+        x1 = column_count-x1;
+        
+        y>>=3;
+        y = row_count-y;     
+        y = 0x01 << y;
+        
+        for (int i=x; x<x1; i++)
+            update_mask[i] |= y;
     }
     void DrawVLine(u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t h) {
         u8g2_DrawVLine(&u8g2, x, y, h);
-        // todo update sequence for line
+        // mask update sequence:
+        x>>=3;
+        x = column_count-x;
+
+        u8g2_uint_t y1 = y + h;
+        y>>=3;
+        y1=(y1+7)>>3;
+        y = row_count-y;
+        y1 = row_count-y1;
+
+        y = 0xff >> (7-y);
+        y1 = 0xff << y1;
+        y &= y1;
+
+        update_mask[x] |= y;
+
     }
     void DrawRect(u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h) {
         u8g2_DrawFrame(&u8g2, x, y, w, h);
@@ -193,19 +220,20 @@ class SSD1322  {
         u8g2_DrawBox(&u8g2, x, y, w, h);
         updateMaskRegions(x, y, x+w, y+h);
     }
-    void DrawText(u8g2_uint_t x, u8g2_uint_t y, const char *s) {
+    uint16_t DrawText(u8g2_uint_t x, u8g2_uint_t y, const char *s) {
         uint16_t count;
         count = u8g2_DrawStr(&u8g2, x, y, s); // xy is down left point  
         updateMaskRegions(x, y-char_height_up, x+count, y+char_height_down);
+        return count;
     }
-    void DrawText(u8g2_uint_t x, u8g2_uint_t y, const uint8_t *i) {
+    uint16_t DrawText(u8g2_uint_t x, u8g2_uint_t y, const uint8_t *i) {
         char tmp[3];
         uint16_t count;
         itoa(i, tmp, 2);
-        DrawText(x, y, tmp);
+        return DrawText(x, y, tmp);
     }
     
-    void Fill() {
+    void FillAllDisplay() {
         u8g2_DrawBox(&u8g2, 0, 0, max_x, max_y);
         memset(update_mask, 0xff, sizeof update_mask);
     }

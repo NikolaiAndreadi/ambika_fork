@@ -27,20 +27,21 @@ class PCA9555_input {
     i2c.End();
   }
 
-  void Update () {
+  bool Update() {
     if (InterruptPin::is_high()) 
-      return;
+      return false;
     i2c.Begin(addr + I2C_WRITE);
     i2c.Write(0); // read data
     i2c.Begin(addr +  I2C_READ);
     data.bytes[0] = i2c.Read(true); // read zeroth reg
     data.bytes[1] = i2c.Read(); // read first register
     i2c.End();
+    return true;
   }
 
-  Word GetData() { return data; }
-
-  DISALLOW_COPY_AND_ASSIGN(PCA9555_input);
+  uint16_t GetData() { return data.value; }
+  uint8_t GetUpperByte() { return data.bytes[1]; }
+  uint8_t GetLowerByte() { return data.bytes[0]; }
 };
 
 } // namespace avrlib

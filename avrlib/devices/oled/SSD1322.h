@@ -38,7 +38,7 @@ class SSD1322  {
     static constexpr uint8_t dryrun_count = 8; 
     // font adjustments
     static constexpr uint8_t char_height_up = 1;
-    static constexpr uint8_t char_height_down = 3;
+    static constexpr uint8_t char_height_down = 2;
     // Update() global vars
     uint8_t last_updated_row;
     uint8_t last_updated_column;
@@ -118,6 +118,8 @@ class SSD1322  {
             update_mask[x] |= y0;
     }
  public:
+    static constexpr uint8_t char_width = 6;
+
     SSD1322() {
         CS::set_mode(avrlib::DIGITAL_OUTPUT);
         CS::High();
@@ -126,7 +128,7 @@ class SSD1322  {
         u8g2_Setup_ssd1322_nhd_256x64_f(&u8g2, U8G2_R2, byte_hw_spi, gpio_and_delay);
         last_updated_row = 0;
         last_updated_column = 0;
-        memset(update_mask, 0, sizeof update_mask);
+        memset(update_mask, 0, sizeof(update_mask));
     }
 
     void Init() {
@@ -164,18 +166,19 @@ class SSD1322  {
     }
     void UpdateAll() {
         u8g2_UpdateDisplay(&u8g2);
-        memset(update_mask, 0, sizeof update_mask);
+        memset(update_mask, 0, sizeof(update_mask));
     }
 
     void SetColor(uint8_t color) { u8g2_SetDrawColor(&u8g2, color); }
     void SetFontMode(uint8_t mode) { u8g2_SetFontMode(&u8g2, mode); }
 
-    void DrawUpdateMaskRegions() {
+    void DrawUpdateMaskRegions(bool withUpdate=false) {
         for (uint8_t v=0; v<column_count; v++)
-            DrawVLine(v*8, 0, max_y);
+            u8g2_DrawVLine(&u8g2, v*8, 0, max_y);
         for (uint8_t h=0; h<row_count; h++)
-            DrawHLine(0, h*8, max_x);
-        UpdateAll();
+            u8g2_DrawHLine(&u8g2, 0, h*8, max_x);
+        if (withUpdate)
+            UpdateAll();
     }
     void DrawHLine(u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w) {
         u8g2_DrawHLine(&u8g2, x, y, w);
@@ -220,24 +223,23 @@ class SSD1322  {
         u8g2_DrawBox(&u8g2, x, y, w, h);
         updateMaskRegions(x, y, x+w, y+h);
     }
-    uint16_t DrawText(u8g2_uint_t x, u8g2_uint_t y, const char *s) {
-        uint16_t count;
-        count = u8g2_DrawStr(&u8g2, x, y, s); // xy is down left point  
+    void DrawText(u8g2_uint_t x, u8g2_uint_t y, const char *s) {
+        uint16_t count = u8g2_DrawStr(&u8g2, x, y, s); // xy is down left point  
         updateMaskRegions(x, y-char_height_up, x+count, y+char_height_down);
-        return count;
     }
-    uint16_t DrawText(u8g2_uint_t x, u8g2_uint_t y, const uint8_t *i) {
+    void DrawText(u8g2_uint_t x, u8g2_uint_t y, const uint8_t i) {
         char tmp[3];
-        uint16_t count;
-        itoa(i, tmp, 2);
-        return DrawText(x, y, tmp);
+        itoa(i, tmp, 10);
+        DrawText(x, y, tmp);
     }
     
     void FillAllDisplay() {
         u8g2_DrawBox(&u8g2, 0, 0, max_x, max_y);
-        memset(update_mask, 0xff, sizeof update_mask);
+        memset(update_mask, 0xff, sizeof(update_mask));
     }
     void ClearBuffer() { u8g2_ClearBuffer(&u8g2); }
+
+    DISALLOW_COPY_AND_ASSIGN(SSD1322);
 };
     
 } // namespace avrlib
